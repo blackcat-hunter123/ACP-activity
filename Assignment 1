@@ -1,0 +1,198 @@
+import java.util.Scanner;
+
+class Student {
+    String name;
+    int rollNo;
+    int[] marks = new int[3];
+    int total;
+    double average;
+
+    void calculate() {
+        total = marks[0] + marks[1] + marks[2];
+        average = total / 3.0;
+    }
+}
+
+public class StudentManagement {
+    static Scanner sc = new Scanner(System.in);
+    static Student[] students = new Student[50];
+    static int count = 0;
+
+    public static void main(String[] args) {
+        int choice;
+        do {
+            System.out.println("\n=== Student Management System ===");
+            System.out.println("1. Add Student");
+            System.out.println("2. Update Marks");
+            System.out.println("3. Remove Student");
+            System.out.println("4. View All Students");
+            System.out.println("5. Search Student");
+            System.out.println("6. Highest Scorer");
+            System.out.println("7. Class Average");
+            System.out.println("8. Exit");
+            System.out.print("Enter choice: ");
+            choice = sc.nextInt();
+
+            switch (choice) {
+                case 1 -> addStudent();
+                case 2 -> updateMarks();
+                case 3 -> removeStudent();
+                case 4 -> viewAll();
+                case 5 -> searchStudent();
+                case 6 -> highestScorer();
+                case 7 -> classAverage();
+                case 8 -> {
+                    System.out.println("\nExiting...");
+                    System.out.println("Total Students: " + count);
+                    System.out.printf("Class Average: %.2f\n", classAverageValue());
+                }
+                default -> System.out.println("Invalid choice!");
+            }
+        } while (choice != 8);
+    }
+
+    // Add Student
+    static void addStudent() {
+        if (count >= 50) {
+            System.out.println("Cannot add more students!");
+            return;
+        }
+        Student s = new Student();
+        System.out.print("Enter Roll Number: ");
+        int roll = sc.nextInt();
+        if (findIndex(roll) != -1) {
+            System.out.println("Roll number already exists!");
+            return;
+        }
+        s.rollNo = roll;
+        sc.nextLine(); // consume newline
+        System.out.print("Enter Name: ");
+        s.name = sc.nextLine();
+
+        for (int i = 0; i < 3; i++) {
+            int mark;
+            do {
+                System.out.print("Enter marks of Subject " + (i+1) + " (0–100): ");
+                mark = sc.nextInt();
+                if (mark < 0 || mark > 100)
+                    System.out.println("Invalid! Marks must be between 0 and 100.");
+            } while (mark < 0 || mark > 100);
+            s.marks[i] = mark;
+        }
+
+        s.calculate();
+        students[count++] = s;
+        System.out.println("Student added successfully!");
+    }
+
+    // Update Marks
+    static void updateMarks() {
+        System.out.print("Enter Roll Number: ");
+        int roll = sc.nextInt();
+        int idx = findIndex(roll);
+        if (idx == -1) {
+            System.out.println("Student not found!");
+            return;
+        }
+        for (int i = 0; i < 3; i++) {
+            int mark;
+            do {
+                System.out.print("Enter new marks of Subject " + (i+1) + " (0–100): ");
+                mark = sc.nextInt();
+                if (mark < 0 || mark > 100)
+                    System.out.println("Invalid! Marks must be between 0 and 100.");
+            } while (mark < 0 || mark > 100);
+            students[idx].marks[i] = mark;
+        }
+        students[idx].calculate();
+        System.out.println("Marks updated successfully!");
+    }
+
+    // Remove Student
+    static void removeStudent() {
+        System.out.print("Enter Roll Number: ");
+        int roll = sc.nextInt();
+        int idx = findIndex(roll);
+        if (idx == -1) {
+            System.out.println("Student not found!");
+            return;
+        }
+        for (int i = idx; i < count - 1; i++) {
+            students[i] = students[i + 1];
+        }
+        students[count - 1] = null;
+        count--;
+        System.out.println("Student removed successfully!");
+    }
+
+    // View All Students
+    static void viewAll() {
+        if (count == 0) {
+            System.out.println("No students to display!");
+            return;
+        }
+        System.out.printf("%-10s %-15s %-10s %-10s %-10s %-10s %-10s\n",
+                "RollNo", "Name", "Sub1", "Sub2", "Sub3", "Total", "Average");
+        for (int i = 0; i < count; i++) {
+            Student s = students[i];
+            System.out.printf("%-10d %-15s %-10d %-10d %-10d %-10d %-10.2f\n",
+                    s.rollNo, s.name, s.marks[0], s.marks[1], s.marks[2], s.total, s.average);
+        }
+    }
+
+    // Search Student
+    static void searchStudent() {
+        System.out.print("Enter Roll Number: ");
+        int roll = sc.nextInt();
+        int idx = findIndex(roll);
+        if (idx == -1) {
+            System.out.println("Student not found!");
+            return;
+        }
+        Student s = students[idx];
+        System.out.printf("RollNo: %d, Name: %s, Marks: [%d, %d, %d], Total: %d, Average: %.2f\n",
+                s.rollNo, s.name, s.marks[0], s.marks[1], s.marks[2], s.total, s.average);
+    }
+
+    // Highest Scorer
+    static void highestScorer() {
+        if (count == 0) {
+            System.out.println("No students available!");
+            return;
+        }
+        Student top = students[0];
+        for (int i = 1; i < count; i++) {
+            if (students[i].total > top.total) {
+                top = students[i];
+            }
+        }
+        System.out.printf("Highest Scorer: %s (RollNo: %d) with %d marks\n",
+                top.name, top.rollNo, top.total);
+    }
+
+    // Class Average
+    static void classAverage() {
+        if (count == 0) {
+            System.out.println("No students available!");
+            return;
+        }
+        System.out.printf("Class Average: %.2f\n", classAverageValue());
+    }
+
+    static double classAverageValue() {
+        if (count == 0) return 0;
+        double sum = 0;
+        for (int i = 0; i < count; i++) {
+            sum += students[i].average;
+        }
+        return sum / count;
+    }
+
+    // Helper: find index by roll number
+    static int findIndex(int roll) {
+        for (int i = 0; i < count; i++) {
+            if (students[i].rollNo == roll) return i;
+        }
+        return -1;
+    }
+}
