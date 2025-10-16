@@ -97,7 +97,7 @@ public class PayrollSystem {
     private Scanner scan = new Scanner(System.in);
 
     public static void main(String[] args) {
-        PayrollSystem ps = new PayrollSystem(); // ✅ Create object
+        PayrollSystem ps = new PayrollSystem();
         while (true) {
             ps.menu();
             int choice = ps.getInt();
