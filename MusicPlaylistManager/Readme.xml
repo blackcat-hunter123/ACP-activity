@@ -1,0 +1,26 @@
+# Music Playlist Manager (Java)
+
+This is a simple Java console-based application that allows users to manage a music playlist.  
+The project demonstrates Object-Oriented Programming (OOP) 
+
+ Features
+- Add songs with title, artist, and duration
+- Remove songs by title
+- Display the playlist
+- Play all songs
+- Search for songs by title
+- Show total number of songs
+- Menu-based console interface
+
+
+OOP Concepts Used
+- Encapsulation: Song details are private and accessed using getter methods.
+- Inheritance: Song class extends the Media class.
+- Polymorphism: Common methods can be used or modified in different ways.
+- Abstraction: Users only see the menu, not the inner working of classes.
+- Static and Final: Used to count total songs and control constant values.
+
+
+Project Member
+Nadeem ullah(56031)
+Waleed Ahmad(56336)
