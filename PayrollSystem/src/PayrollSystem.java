@@ -1,0 +1,257 @@
+import java.util.*;
+
+interface Payable {
+    double calculateNetSalary();
+    void generatePayslip();
+}
+
+abstract class Employee {
+    private int empId;
+    private String name;
+    private double basicSalary;
+
+    Employee(int empId, String name, double basicSalary) {
+        this.empId = empId;
+        this.name = name;
+        this.basicSalary = basicSalary;
+    }
+
+    int getEmpId() { return empId; }
+    String getName() { return name; }
+    double getBasicSalary() { return basicSalary; }
+
+    void setEmpId(int empId) { this.empId = empId; }
+    void setName(String name) { this.name = name; }
+    void setBasicSalary(double basicSalary) { this.basicSalary = basicSalary; }
+
+    abstract double calculateTax();
+}
+
+class PermanentEmployee extends Employee implements Payable {
+    private double bonus;
+
+    PermanentEmployee(int id, String n, double s, double b) {
+        super(id, n, s);
+        bonus = b;
+    }
+
+    double calculateTax() {
+        return (getBasicSalary() + bonus) * 0.10;
+    }
+
+    public double calculateNetSalary() {
+        return (getBasicSalary() + bonus) - calculateTax();
+    }
+
+    public void generatePayslip() {
+        System.out.println("----- Payslip -----");
+        System.out.println("ID: " + getEmpId());
+        System.out.println("Name: " + getName());
+        System.out.println("Type: Permanent");
+        System.out.println("Basic Salary: " + getBasicSalary());
+        System.out.println("Bonus: " + bonus);
+        System.out.println("Tax: " + calculateTax());
+        System.out.println("Net Salary: " + calculateNetSalary());
+        System.out.println("-------------------");
+    }
+
+    double getBonus() { return bonus; }
+    void setBonus(double b) { bonus = b; }
+}
+
+class ContractEmployee extends Employee implements Payable {
+    private int contractDuration;
+
+    ContractEmployee(int id, String n, double s, int d) {
+        super(id, n, s);
+        contractDuration = d;
+    }
+
+    double calculateTax() {
+        return getBasicSalary() * 0.05;
+    }
+
+    public double calculateNetSalary() {
+        return getBasicSalary() - calculateTax();
+    }
+
+    public void generatePayslip() {
+        System.out.println("----- Payslip -----");
+        System.out.println("ID: " + getEmpId());
+        System.out.println("Name: " + getName());
+        System.out.println("Type: Contract");
+        System.out.println("Basic Salary: " + getBasicSalary());
+        System.out.println("Contract Duration: " + contractDuration + " months");
+        System.out.println("Tax: " + calculateTax());
+        System.out.println("Net Salary: " + calculateNetSalary());
+        System.out.println("-------------------");
+    }
+
+    int getContractDuration() { return contractDuration; }
+    void setContractDuration(int d) { contractDuration = d; }
+}
+
+public class PayrollSystem {
+    private Employee[] list = new Employee[5];
+    private int total = 0;
+    private Scanner scan = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        PayrollSystem ps = new PayrollSystem();
+        while (true) {
+            ps.menu();
+            int choice = ps.getInt();
+            switch (choice) {
+                case 1 -> ps.add();
+                case 2 -> ps.show();
+                case 3 -> ps.search();
+                case 4 -> ps.maxSalary();
+                case 5 -> ps.avgSalary();
+                case 6 -> ps.slip();
+                case 7 -> ps.exit();
+                default -> System.out.println("Invalid option");
+            }
+        }
+    }
+
+    void menu() {
+        System.out.println("\n1.Add Employee");
+        System.out.println("2.View All Employees");
+        System.out.println("3.Search Employee");
+        System.out.println("4.Highest Net Salary");
+        System.out.println("5.Average Salary");
+        System.out.println("6.Generate Payslip");
+        System.out.println("7.Exit");
+        System.out.print("Choose: ");
+    }
+
+    int getInt() {
+        try { return Integer.parseInt(scan.nextLine()); }
+        catch (Exception e) { return -1; }
+    }
+
+    void add() {
+        if (total >= 5) {
+            System.out.println("Limit reached.");
+            return;
+        }
+        System.out.print("Employee ID: ");
+        int id = getInt();
+        if (exists(id)) {
+            System.out.println("ID already exists.");
+            return;
+        }
+        System.out.print("Name: ");
+        String name = scan.nextLine();
+        System.out.print("Basic Salary: ");
+        double salary = Double.parseDouble(scan.nextLine());
+        System.out.println("1.Permanent  2.Contract");
+        int type = getInt();
+
+        if (type == 1) {
+            System.out.print("Bonus: ");
+            double b = Double.parseDouble(scan.nextLine());
+            list[total++] = new PermanentEmployee(id, name, salary, b);
+        } else if (type == 2) {
+            System.out.print("Contract Duration (months): ");
+            int d = getInt();
+            list[total++] = new ContractEmployee(id, name, salary, d);
+        } else {
+            System.out.println("Invalid type.");
+        }
+        System.out.println("Employee added successfully!");
+    }
+
+    boolean exists(int id) {
+        for (int i = 0; i < total; i++)
+            if (list[i].getEmpId() == id) return true;
+        return false;
+    }
+
+    void show() {
+        if (total == 0) {
+            System.out.println("No employees.");
+            return;
+        }
+        System.out.printf("%-5s %-15s %-10s %-12s %-10s %-10s %-12s\n",
+                "ID", "Name", "Type", "Basic", "Bonus/Dur", "Tax", "Net");
+        for (int i = 0; i < total; i++) {
+            String type;
+            String extra;
+            double tax = list[i].calculateTax();
+            double net = ((Payable) list[i]).calculateNetSalary();
+            if (list[i] instanceof PermanentEmployee) {
+                type = "Permanent";
+                extra = String.valueOf(((PermanentEmployee) list[i]).getBonus());
+            } else {
+                type = "Contract";
+                extra = ((ContractEmployee) list[i]).getContractDuration() + " m";
+            }
+            System.out.printf("%-5d %-15s %-10s %-12.2f %-10s %-10.2f %-12.2f\n",
+                    list[i].getEmpId(), list[i].getName(), type,
+                    list[i].getBasicSalary(), extra, tax, net);
+        }
+    }
+
+    void search() {
+        System.out.print("Enter ID: ");
+        int id = getInt();
+        Employee emp = find(id);
+        if (emp == null) {
+            System.out.println("Employee not found.");
+            return;
+        }
+        ((Payable) emp).generatePayslip();
+    }
+
+    Employee find(int id) {
+        for (int i = 0; i < total; i++)
+            if (list[i].getEmpId() == id) return list[i];
+        return null;
+    }
+
+    void maxSalary() {
+        if (total == 0) {
+            System.out.println("No employees.");
+            return;
+        }
+        Employee max = list[0];
+        double maxNet = ((Payable) max).calculateNetSalary();
+        for (int i = 1; i < total; i++) {
+            double ns = ((Payable) list[i]).calculateNetSalary();
+            if (ns > maxNet) {
+                max = list[i];
+                maxNet = ns;
+            }
+        }
+        System.out.println("Highest Net Salary: " + max.getName() + " (" + maxNet + ")");
+    }
+
+    void avgSalary() {
+        if (total == 0) {
+            System.out.println("No employees.");
+            return;
+        }
+        double sum = 0;
+        for (int i = 0; i < total; i++)
+            sum += ((Payable) list[i]).calculateNetSalary();
+        System.out.println("Average Net Salary: " + (sum / total));
+    }
+
+    void slip() {
+        System.out.print("Enter ID: ");
+        int id = getInt();
+        Employee emp = find(id);
+        if (emp != null) ((Payable) emp).generatePayslip();
+        else System.out.println("Employee not found.");
+    }
+
+    void exit() {
+        System.out.println("Total Employees: " + total);
+        double sum = 0;
+        for (int i = 0; i < total; i++)
+            sum += ((Payable) list[i]).calculateNetSalary();
+        if (total > 0) System.out.println("Overall Average Salary: " + (sum / total));
+        System.exit(0);
+    }
+}
