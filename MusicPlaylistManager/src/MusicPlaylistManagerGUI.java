@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class MusicPlaylistManagerGUI extends JFrame {
     private Playlist playlist;
@@ -11,11 +13,20 @@ public class MusicPlaylistManagerGUI extends JFrame {
     public MusicPlaylistManagerGUI() {
         playlist = new Playlist();
         setupUI();
+        
+        // Add window listener to close database connection on exit
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                playlist.closeDatabase();
+                System.exit(0);
+            }
+        });
     }
 
     private void setupUI() {
         setTitle("Music Playlist Manager");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setSize(900, 650);
         setLocationRelativeTo(null);
         setResizable(true);
@@ -90,10 +101,19 @@ public class MusicPlaylistManagerGUI extends JFrame {
         refreshButton.addActionListener(e -> updatePlaylistDisplay());
         actionPanel.add(refreshButton);
 
+        JButton clearAllButton = new JButton("Clear All");
+        clearAllButton.setBackground(Color.RED);
+        clearAllButton.setForeground(Color.WHITE);
+        clearAllButton.addActionListener(e -> clearAllSongs());
+        actionPanel.add(clearAllButton);
+
         JButton exitButton = new JButton("Exit");
         exitButton.setBackground(Color.RED);
         exitButton.setForeground(Color.WHITE);
-        exitButton.addActionListener(e -> System.exit(0));
+        exitButton.addActionListener(e -> {
+            playlist.closeDatabase();
+            System.exit(0);
+        });
         actionPanel.add(exitButton);
 
         // Info Panel - Total songs
@@ -150,6 +170,19 @@ public class MusicPlaylistManagerGUI extends JFrame {
                         .append(" (").append(song.getDuration()).append(" min)\n");
             }
             JOptionPane.showMessageDialog(this, sb.toString(), "Playing All Songs", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void clearAllSongs() {
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "Are you sure you want to clear all songs?", 
+            "Confirm Clear", 
+            JOptionPane.YES_NO_OPTION);
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            playlist.clearAllSongs();
+            updatePlaylistDisplay();
+            JOptionPane.showMessageDialog(this, "All songs cleared!", "Success", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
